@@ -43,7 +43,7 @@ ChatRoom.prototype.getPerson = function(personID) {
 
 ChatRoom.prototype.getPing = function(key) {
 
-	return " lick my nutz "+key;
+	return "chatroom ping "+key;
 };
 
 ChatRoom.prototype.isAvailable = function() {

@@ -7,14 +7,22 @@ var MAX_LOGIN_ATTEMPS = 4;
 var LOCK_TIME = 2 * 60 * 60 * 1000;
 var Schema = mongoose.Schema;
 
+var config = require('../config');
 
 // db connection  and model
-mongoose.connect('mongodb://localhost:27017');
+mongoose.connect(config.database);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function callback () {
 	console.log("hello flint");
 });
+
+// enable retrieve of token secret
+var tokenSecret = config.secret;
+
+var getTokenSecret = function(){
+	return tokenSecret;
+}
 
 // create schema for collection
 
@@ -29,8 +37,10 @@ var entrySchema  = new Schema ({
 });
 
 var userSchema = new Schema ({
-	username: { type: String, required: true, index: { unique: true } },
+	email: { type: String, required: true, index: { unique: true } },
 	password: { type: String, required: true },
+	displayname: {type: String},
+	admin: {type:Boolean},
 	loginAttempts: { type: Number, required: true, default: 0 },
 	lockUntil: { type: Number }
 });
@@ -43,7 +53,7 @@ userSchema.virtual('isLocked').get(function(){
 userSchema.statics.failedLogin = {
 	NOT_FOUND: 0,
 	PASSWORD_INCORRECT: 1,
-	MAX_ATTEMPTS: 2
+	MAX_ATTEMPTS: 4
 };
 
 userSchema.pre('save', function(next) {
@@ -66,8 +76,11 @@ userSchema.pre('save', function(next) {
 	});
 });
 
-userSchema.methods.comparePassword = function(candidatePassword, cb) {
-	bcrypt.compare(candidatePassword, this.password, function(err, isMatch) {
+userSchema.methods.comparePassword = function(candidatePassword, hashp, cb) {
+	bcrypt.compare(candidatePassword, hashp, function(err, isMatch) {
+
+		console.log(" hash p "+hashp);
+
 		if (err) return cb(err);
 		cb(null, isMatch);
 	});
@@ -100,8 +113,6 @@ locationSchema.pre('save', function(next){
 // Indexes this schema in 2dsphere format (critical for running proximity searches)
 locationSchema.index({location: '2dsphere'});
 
-// Exports the UserSchema for use elsewhere. Sets the MongoDB collection to be used as: "scotch-users"
-
 /***** end Location Schema ******/
 
 var LocationEntries = mongoose.model('LocationEntries', locationSchema);
@@ -111,3 +122,4 @@ var UserSchema = mongoose.model('UserSchema', userSchema);
 module.exports.LocationEntries = LocationEntries;
 module.exports.UserEntries = UserEntries;
 module.exports.UserSchema = UserSchema;
+module.exports.getTokenSecret = getTokenSecret;
