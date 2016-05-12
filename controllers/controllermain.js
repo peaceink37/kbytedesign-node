@@ -5,7 +5,9 @@
  */
 
 var models = require('../model/app-model-main');
-var jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
+
+const fs = require('fs');
 
 // User Authentication Controller
 function ProcessUserAuth(reqObject, res){
@@ -15,7 +17,7 @@ function ProcessUserAuth(reqObject, res){
 	//	return;
 	//});
 
-	console.log(' processUserAuth happening email and display name '+reqObject.body.email+' disp name '+reqObject.body.displayname);
+	console.log(' processUserAuth happening email and display name '+reqObject.body.email);
 	var requestObject = reqObject;
 	var responseObject = res;
 	var resObject = {};
@@ -29,6 +31,8 @@ function ProcessUserAuth(reqObject, res){
 		responseObject.json({
 			success: true,
 			message: 'Token Has Been Set',
+			displayname:user.displayname,
+			email:user.email,
 			token: token
 		})
 	}
@@ -49,15 +53,15 @@ function ProcessUserAuth(reqObject, res){
 				console.log(' user save error '+error);
 				throw error;
 			}
-			resObject.message = "true";
+
 			// Process request and respond with a token
-			responseObject.json(resObject);
+			createToken(aPerson);
 		});
 
 	}
 
 	// see if current user
-	function authExistingUser(){
+	function authUser(){
 
 	    models.UserSchema.findOne({
 		    email: requestObject.body.email
@@ -91,42 +95,88 @@ function ProcessUserAuth(reqObject, res){
 
 	}
 
-	function verifyToken(){
-
-		// check header or url parameters or post parameters for token
-		var token = requestObject.body.token || requestObject.query.token || requestObject.headers['x-access-token'];
-
-		if (token) {
-
-			// verifies secret and checks exp
-			jwt.verify(token, models.getTokenSecret(), function(err, decoded) {
-				if (err) {
-					return responseObject.json({ success: false, message: 'Failed to authenticate token.' });
-				} else {
-					// if everything is good, save to request for use in other routes
-					requestObject.decoded = decoded;
-				}
-			});
-
-		} else {
-
-			// if there is no token
-			// return an error
-			return responseObject.status(403).send({
-				success: false,
-				message: 'No token provided.'
-			});
-
-		}
-	};
-
-	authExistingUser();
-
+	authUser();
 	//models.UserEntries.remove({}, function(err) {
 	//	console.log('collection removed');
 	//});
 
+}
+
+
+
+
+function VerifyToken(req, res, next){
+
+    var responseObj;
+	// check header or url parameters or post parameters for token
+	var token = req.body.token || req.query.token || req.headers['x-access-token'];
+	
+	if (token) {
+		// verifies secret and checks exp
+		jwt.verify(token, models.getTokenSecret(), function(err, decoded) {
+			if (err) {
+				console.log(' token bad '+token);
+				res.json({ success: false, message: 'Failed to authenticate token.' });
+			} else {
+				// if everything is good, save to request for use in other routes
+                token.decoded = decoded;
+                verifyObj.token = token.decoded;
+                verifyObj.verified = true;
+                return next();
+
+			}
+		});
+
+	} else {
+
+		// if there is no token
+		// return an error
+		res.status(403).send({
+			success: false,
+			message: 'No token provided.'
+		});
+
+	}
+
+};
+
+function SetEntry(req, res){
+	
+
+	// create a friend location, information comes from AJAX request from Angular
+	console.log(" we are in the set entry world ");
+	var newEntry = new models.UserEntries();
+	newEntry.uid = req.body.userId;
+	newEntry.title = req.body.title;
+	newEntry.author = req.body.userName;
+	newEntry.body = req.body.bodyBooty;
+	newEntry.comments = req.body.comments;
+	newEntry.hidden = req.body.hidden;
+
+	newEntry.save(function (err) {
+
+		if (err) {
+			throw err;
+			//res.json.({Result:false})
+		} else {
+			res.json({Result: true})
+		}
+
+		console.log(" user " + req.body.userName + " saved ");
+
+		// respond with save is true
+
+	});
 
 }
 
+module.exports.accessLog = function(req, res, next){
+
+
+
+}
+
+module.exports.VerifyToken = VerifyToken;
+module.exports.SetEntry = SetEntry;
 module.exports.ProcessUserAuth = ProcessUserAuth;
+

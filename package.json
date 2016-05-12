@@ -18,6 +18,7 @@
     "morgan": "~1.6.1",
     "node-uuid": "^1.4.7",
     "pubsub-js": "*",
+    "pug": "^2.0.0-alpha6",
     "q": "*",
     "request": "~2.48.0",
     "socket.io": "^1.4.5",

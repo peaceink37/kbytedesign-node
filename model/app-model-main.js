@@ -20,7 +20,7 @@ db.once('open', function callback () {
 // enable retrieve of token secret
 var tokenSecret = config.secret;
 
-var getTokenSecret = function(){
+function getTokenSecret(){
 	return tokenSecret;
 }
 
