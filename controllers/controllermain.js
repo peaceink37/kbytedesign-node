@@ -4,13 +4,12 @@
  * 2016 pokingBears.com
  */
 
-var models = require('../model/app-model-main');
 const jwt = require('jsonwebtoken');
 
 const fs = require('fs');
 
 // User Authentication Controller
-function ProcessUserAuth(reqObject, res){
+function ProcessUserAuth(reqObject, res, next){
 
 	//models.UserSchema.remove({}, function(err) {
 	//	console.log(' user schema collection removed');
@@ -96,9 +95,6 @@ function ProcessUserAuth(reqObject, res){
 	}
 
 	authUser();
-	//models.UserEntries.remove({}, function(err) {
-	//	console.log('collection removed');
-	//});
 
 }
 
@@ -110,6 +106,9 @@ function VerifyToken(req, res, next){
     var responseObj;
 	// check header or url parameters or post parameters for token
 	var token = req.body.token || req.query.token || req.headers['x-access-token'];
+	//var verifyObj;
+
+	console.log(' verify called ');
 	
 	if (token) {
 		// verifies secret and checks exp
@@ -120,8 +119,8 @@ function VerifyToken(req, res, next){
 			} else {
 				// if everything is good, save to request for use in other routes
                 token.decoded = decoded;
-                verifyObj.token = token.decoded;
-                verifyObj.verified = true;
+                //verifyObj.token = token.decoded;
+                //verifyObj.verified = true;
                 return next();
 
 			}
@@ -170,6 +169,39 @@ function SetEntry(req, res){
 
 }
 
+// use a callback or promise here
+function GetUserEntries (req, res, next) {
+    console.log(" routes seem to be working "+req.body);
+    // use mongoose to get all user entries in the database
+    var _this = this;
+        _this.stro;
+        _this.dyno = false; 
+
+    models.UserEntries.find(function (err, uentries) {
+
+        // if there is an error retrieving, send the error. nothing after res.send(err) will execute
+        if (err){
+            res.send(err)
+        } else if (_this.dyno === true){
+            
+            var stripedEntries = [];
+            for(foo in uentries){
+                console.log(' foo '+uentries[foo].body+'   '+typeof uentries[foo].body+' '+stripedEntries);
+
+                    stripedEntries.push(uentries[foo].body);
+                //}
+            }
+            _this.stro = stripedEntries.join('\n');
+            res.render('dynamic', { title: 'Hey', message: 'Hello there!', bodyMessage:'You\'re a mean grinch'}); 
+                        
+        } else {
+            res.json(uentries); // return all friend locations in JSON format
+            return next();    
+        }
+
+    });
+}
+
 module.exports.accessLog = function(req, res, next){
 
 
@@ -177,6 +209,7 @@ module.exports.accessLog = function(req, res, next){
 }
 
 module.exports.VerifyToken = VerifyToken;
+module.exports.GetUserEntries = GetUserEntries;
 module.exports.SetEntry = SetEntry;
 module.exports.ProcessUserAuth = ProcessUserAuth;
 
