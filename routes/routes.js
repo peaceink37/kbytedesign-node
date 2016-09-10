@@ -14,6 +14,7 @@ function Routes(app, express) {
     /************** Authorize ***************/
 
     app.post('/api/userauth', controllerMain.ProcessUserAuth);
+    app.post('/api/resetpass', controllerMain.EmailVerify);
 
     /************ Retrieve Entries **********/
     app.get('/users/uentries', controllerMain.GetUserEntries);

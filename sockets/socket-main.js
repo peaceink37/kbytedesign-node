@@ -7,6 +7,7 @@
 
 var uuid = require('node-uuid');
 var ChatRoom = require('../chatspace/chatroom');
+var videoController = require('../controllers/videoControllerMain');
 
 function SocketIO(io) {
 
@@ -100,6 +101,12 @@ function SocketIO(io) {
 
 		client.on("joinRoom", function(id) {
 			joinRoom(id,client);
+		});
+		client.on("vidplay", function(vstream){
+			videoController.videoStarted(vstream);
+		});
+		client.on("vidstop", function(vstream){
+			videoController.videoStop(vstream);
 		});
 
 		client.on("leaveRoom", function(id) {

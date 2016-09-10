@@ -5,8 +5,10 @@
  */
 
 const jwt = require('jsonwebtoken');
-
 const fs = require('fs');
+const nodemailer = require('nodemailer');
+
+var models = require('../model/app-model-main');
 
 // User Authentication Controller
 function ProcessUserAuth(reqObject, res, next){
@@ -139,6 +141,33 @@ function VerifyToken(req, res, next){
 
 };
 
+function EmailVerify(req, res){
+    
+
+    var transporter = nodemailer.createTransport('smtps://col.penrodjarvis@gmail.com:password@smtp.gmail.com');
+    
+     
+    // setup e-mail data with unicode symbols 
+    var mailOptions = {
+        from: 'admin@kbytedesign.com', // sender address 
+        to: 'kelly@pokingbears.com', // list of receivers 
+        subject: 'Password Reset', // Subject line 
+        text: 'Please click on link below to reset your password', // plaintext body 
+        html: '<b>Hello world</b>' // html body 
+    };
+     
+    // send mail with defined transport object 
+    transporter.sendMail(mailOptions, function(error, info){
+
+        console.log(" send mail called from top ");
+        if(error){
+            return console.log(" error motherfucker!!! "+error);
+        }
+        console.log('Message sent: ' + info.response);
+    });
+
+}
+
 function SetEntry(req, res){
 	
 
@@ -212,4 +241,5 @@ module.exports.VerifyToken = VerifyToken;
 module.exports.GetUserEntries = GetUserEntries;
 module.exports.SetEntry = SetEntry;
 module.exports.ProcessUserAuth = ProcessUserAuth;
+module.exports.EmailVerify = EmailVerify;
 
