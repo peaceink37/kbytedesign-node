@@ -106,6 +106,7 @@ function SocketIO(io) {
 			videoController.videoStarted(vstream);
 		});
 		client.on("vidstop", function(vstream){
+			console.log(' stopped the video recording here ');
 			videoController.videoStop(vstream);
 		});
 

@@ -25,6 +25,15 @@ app.use(express.static(__dirname+'/kbyteui/public'));
 app.use(express.static(__dirname+'/logs'));
 app.use(morgan('dev'));
 
+app.use(bodyParser.json({
+    limit: '16mb'
+}));
+
+app.use(bodyParser.urlencoded({
+    extended: false,
+    limit: '16mb'
+}));
+
 // body parser and headers should be set before calling in Routes
 app.use(bodyParser.urlencoded({'extended':'true'}));            // parse application/x-www-form-urlencoded
 app.use(bodyParser.json());                                     // parse application/json
